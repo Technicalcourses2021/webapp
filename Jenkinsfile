@@ -19,14 +19,14 @@ pipeline {
                 sh 'docker build -t sudheer10thota/webapp:1.0.0 .'
             }
         }
-        stage('Push Docker Image') {
+        /*stage('Push Docker Image') {
             steps {
                 withCredentials([string(credentialsId: 'jenkinsdocker-hub-pwd', variable: 'dockerhubpwd')]) {
              sh "docker login -u sudheer10thota -p ${dockerhubpwd}"
             }
             sh 'docker push sudheer10thota/webapp:1.0.0'
             }
-        }
+        } */
         stage('Run your image'){
             steps {
                 sh 'docker run -dit -p 8003:8080 sudheer10thota/webapp:1.0.0'
