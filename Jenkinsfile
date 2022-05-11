@@ -27,10 +27,10 @@ pipeline {
             sh 'docker push sudheer10thota/webapp:1.0.0'
             }
         } */
-        stage('Run your image'){
+        /*stage('Run your image'){
             steps {
                 sh 'docker run -dit -p 8003:8080 sudheer10thota/webapp:1.0.0'
             }
-        }
+        }*/
     }
 }
