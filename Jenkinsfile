@@ -1,36 +1,25 @@
 pipeline {
     agent any
-
     stages {
-        stage('Git Checkout') {
+        stage('Remove stale branches') {
             steps {
-                git credentialsId: 'jenkinsGitHub', url: 'https://github.com/Technicalcourses2021/webapp.git'
+                // Clone the GitHub repository
+                git url: 'https://github.com/user/repo.git', credentialsId: 'github-creds'
+
+                // Get a list of all branches and remove any that haven't been updated in the last 30 days
+                sh "git branch -r --merged | egrep -v '(^\\*|master|develop)' | sed 's/origin\\///' | xargs -n 1 git show-ref --heads -- | sort -rn | grep -v 'develop' | grep -v 'master' | while read rev ref; do if test `git log -1 --date=short --pretty=format:%ad $rev | xargs -I{} date -d {} +%s` -lt `date -d '30 days ago' +%s`; then git push origin :$ref; fi; done"
+
+                // Push the changes to the GitHub repository
+                git push origin --tags --delete --prune
             }
         }
-        stage('mvn configuration') {
-            steps {
-                withMaven(maven: 'M2_HOME') {
-                    sh 'mvn clean install'
-                    }
-            }
+    }
+    post {
+        success {
+            echo 'All stale branches have been removed from the GitHub repository'
         }
-        stage('docker image build') {
-            steps {
-                sh 'docker build -t sudheer10thota/webapp:1.0.0 .'
-            }
+        failure {
+            echo 'Failed to remove stale branches from the GitHub repository'
         }
-        /*stage('Push Docker Image') {
-            steps {
-                withCredentials([string(credentialsId: 'jenkinsdocker-hub-pwd', variable: 'dockerhubpwd')]) {
-             sh "docker login -u sudheer10thota -p ${dockerhubpwd}"
-            }
-            sh 'docker push sudheer10thota/webapp:1.0.0'
-            }
-        } */
-        /*stage('Run your image'){
-            steps {
-                sh 'docker run -dit -p 8003:8080 sudheer10thota/webapp:1.0.0'
-            }
-        }*/
     }
 }
